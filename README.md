@@ -1,39 +1,123 @@
-### Catálogo de Requisitos
+# Catálogo de Requisitos
 
-#### Requisitos Funcionales
-1. El sistema debe permitir a los usuarios registrarse proporcionando un nombre, correo electrónico y contraseña.
-2. El sistema debe permitir a los usuarios autenticarse mediante su correo electrónico y contraseña.
-3. Los usuarios deben poder solicitar un enlace para restablecer su contraseña desde la página de inicio de sesión.
-4. El sistema debe enviar un correo electrónico con un enlace para restablecer la contraseña cuando un usuario lo solicite.
-5. El enlace de restablecimiento de contraseña debe expirar después de 2 horas y ser válido solo una vez.
-6. El sistema debe permitir a los usuarios cambiar su contraseña solo si es diferente de las últimas cinco utilizadas.
-7. Los usuarios deben permanecer autenticados durante un máximo de 2 horas a través de un token de sesión (JWT).
-8. El sistema debe invalidar automáticamente los enlaces de restablecimiento de contraseña después de ser utilizados.
-9. El sistema debe registrar el historial de contraseñas del usuario para evitar repeticiones.
+## Requisitos Funcionales
 
-#### Requisitos No Funcionales
-1. El sistema debe manejar un tiempo de respuesta inferior a 3 segundos en operaciones críticas como el inicio de sesión y el restablecimiento de contraseñas.
-2. La aplicación debe ser capaz de manejar al menos 100 usuarios concurrentes en su entorno de desarrollo.
-3. Los datos sensibles, como las contraseñas, deben cifrarse utilizando algoritmos seguros (bcrypt).
-4. El sistema debe ser compatible con los navegadores modernos como Chrome, Firefox, y Edge en sus últimas versiones.
-5. El sistema debe operar correctamente tanto en dispositivos móviles como de escritorio.
+1. **Registro de usuarios:**
+    - El sistema debe permitir a los usuarios registrarse con un nombre, correo electrónico y contraseña.
+    - El sistema debe enviar un correo de confirmación tras el registro.
+    - Los usuarios deben confirmar su correo electrónico antes de poder iniciar sesión.
+    - Si un usuario intenta registrarse o iniciar sesión con un correo no confirmado, el sistema debe informar que está pendiente de confirmación.
+    - El sistema debe permitir solicitar el reenvío del correo de confirmación, limitado a una vez cada 10 minutos.
 
-#### Requisitos Técnicos
-1. El backend debe implementarse en Node.js utilizando Express como framework principal.
-2. El frontend debe desarrollarse con React.js, utilizando TypeScript para tipado estático.
-3. La persistencia de datos debe realizarse con una base de datos MariaDB.
-4. La gestión del estado global del frontend debe manejarse mediante Redux Toolkit.
-5. La aplicación debe usar TailwindCSS para la estilización de la interfaz de usuario.
-6. Los correos electrónicos deben enviarse utilizando Nodemailer con configuración SMTP.
-7. Los tokens de sesión deben generarse y verificarse utilizando la biblioteca jsonwebtoken.
-8. La validación de contraseñas debe realizarse mediante bcrypt para garantizar seguridad.
-9. El sistema debe usar JSON para almacenar el historial de contraseñas en la base de datos.
-10. El manejo de rutas en el frontend debe implementarse utilizando React Router DOM.
+2. **Inicio de sesión:**
+    - El sistema debe permitir a los usuarios iniciar sesión con sus credenciales.
 
-#### Requisitos de Usabilidad
-1. La interfaz debe ser intuitiva, permitiendo que los usuarios realicen acciones básicas como registro y restablecimiento de contraseñas sin necesidad de conocimientos técnicos.
-2. El diseño debe ser responsive y adaptarse a pantallas de dispositivos móviles, tablets y ordenadores.
-3. Los formularios deben validar los datos de entrada en tiempo real y mostrar mensajes de error claros en caso de que la información sea incorrecta.
-4. Las notificaciones, como las relacionadas con el restablecimiento de contraseña o inicio de sesión fallido, deben mostrarse mediante mensajes visuales destacados en la interfaz.
-5. El tiempo de carga inicial de la página principal debe ser menor a 2 segundos en una conexión estándar de 4G.
-6. La interfaz debe ser visualmente atractiva, utilizando colores y tipografías consistentes para garantizar una experiencia agradable al usuario.
+3. **Gestión de contraseñas:**
+    - Los usuarios deben poder solicitar un restablecimiento de contraseña si la olvidan.
+    - El sistema debe enviar un enlace por correo electrónico para restablecer la contraseña, válido durante 2 horas.
+    - El usuario debe poder cambiar su contraseña, siempre que no sea igual a las cinco últimas.
+
+4. **Sesión:**
+    - El sistema debe permitir la persistencia de la sesión mediante JSON Web Tokens durante un período de 2 horas.
+
+5. **Chatbot:**
+    - Los usuarios deben poder iniciar un nuevo chat con el chatbot LLM.
+    - El chatbot debe responder preguntas teóricas sobre Python basándose en un modelo LLM.
+    - El chatbot debe permitir al usuario solicitar ejemplos prácticos en las respuestas.
+    - El chatbot debe recordar el contexto del chat para respuestas coherentes durante una sesión activa.
+
+6. **Gestión de chats:**
+    - El sistema debe permitir guardar chats históricos de los usuarios.
+    - Los usuarios deben poder ver su historial de chats guardados y seleccionar uno para revisarlo.
+
+7. **Configuraciones del usuario:**
+    - La configuración debe permitir habilitar/deshabilitar sugerencias automáticas al escribir en el chat.
+    - La configuración debe permitir elegir el nivel de detalle de las respuestas del chatbot (básico o avanzado).
+    - La configuración debe incluir la posibilidad de activar o desactivar el almacenamiento automático de chats (chats temporales).
+    - La configuración debe permitir cambiar el idioma del chatbot.
+    - La configuración debe permitir al usuario elegir entre un tema claro y oscuro.
+    - La configuración debe permitir personalizar el tiempo máximo de inactividad antes de cerrar la sesión automáticamente.
+
+8. **Layout:**
+    - **Header:**
+        - Botón para iniciar un nuevo chat.
+        - Menú desplegable con opciones como "Información de cuenta", "Historial de chats", "Configuración", y "Cerrar sesión".
+    - **Footer:**
+        - Información legal y datos de contacto.
+
+9. **Administración:**
+    - El sistema debe permitir a los administradores revisar logs de errores o eventos relevantes.
+
+10. **Cierre de sesión:**
+    - Los usuarios deben poder cerrar sesión desde cualquier página.
+
+## Requisitos No Funcionales
+
+1. **Rendimiento:**
+    - El sistema debe garantizar una respuesta rápida del chatbot, con un tiempo máximo de respuesta de 2 segundos para cada consulta.
+
+2. **Compatibilidad:**
+    - La aplicación debe ser accesible desde dispositivos móviles y de escritorio.
+
+3. **Seguridad:**
+    - El sistema debe garantizar la seguridad de los datos mediante contraseñas hash y comunicación segura (HTTPS).
+
+4. **Interfaz:**
+    - La interfaz debe ser intuitiva, utilizando React con TypeScript y estilización con TailwindCSS.
+
+5. **Auditoría:**
+    - Las operaciones críticas, como restablecer contraseña, deben registrar logs de actividad para auditoría.
+
+## Requisitos Técnicos
+
+1. **Frontend:**
+    - Desarrollado en React.js con TypeScript y utilizando React Router DOM para el manejo de rutas.
+    - Gestión del estado global mediante Redux Toolkit.
+
+2. **Backend:**
+    - Desarrollado en Node.js con Express.
+  
+3. **Base de datos:**
+    - Persistencia de datos utilizando MariaDB.
+
+4. **Seguridad:**
+    - Contraseñas almacenadas con hashing seguro (bcrypt).
+    - Persistencia de sesión mediante JSON Web Tokens.
+
+5. **Correo:**
+    - Envío de correos electrónicos mediante Nodemailer.
+
+6. **Modelo de IA:**
+    - Integración de un modelo LLM para responder preguntas sobre Python.
+
+7. **Eficiencia:**
+    - Implementación de mecanismos para el manejo eficiente de solicitudes concurrentes al modelo LLM.
+
+8. **Componentes reutilizables:**
+    - Diseño del layout como componentes reutilizables en React.
+
+## Requisitos de Usabilidad
+
+1. **Accesibilidad:**
+    - La interfaz debe ser fácil de entender para usuarios con conocimientos básicos de tecnología.
+
+2. **Diseño responsivo:**
+    - El diseño debe adaptarse a pantallas de distintos tamaños.
+
+3. **Footer:**
+    - Debe proporcionar enlaces claros y accesibles a información legal y de contacto.
+
+4. **Header:**
+    - Las opciones del header deben estar organizadas y ser fácilmente accesibles.
+
+5. **Retroalimentación:**
+    - El sistema debe ofrecer retroalimentación visual para indicar el estado de las acciones (como "Contraseña cambiada exitosamente").
+
+6. **Historial de chats:**
+    - Los chats deben estar ordenados cronológicamente en el historial.
+
+7. **Sección de ayuda:**
+    - Las preguntas más frecuentes sobre el uso del chatbot deben estar disponibles en una sección de ayuda.
+
+8. **Personalización:**
+    - La configuración debe incluir opciones accesibles para personalizar el comportamiento del chatbot, como nivel de detalle o tipo de ejemplos en las respuestas.
