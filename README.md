@@ -28,6 +28,7 @@
 7. Los tokens de sesión deben generarse y verificarse utilizando la biblioteca jsonwebtoken.
 8. La validación de contraseñas debe realizarse mediante bcrypt para garantizar seguridad.
 9. El sistema debe usar JSON para almacenar el historial de contraseñas en la base de datos.
+10. El manejo de rutas en el frontend debe implementarse utilizando React Router DOM.
 
 #### Requisitos de Usabilidad
 1. La interfaz debe ser intuitiva, permitiendo que los usuarios realicen acciones básicas como registro y restablecimiento de contraseñas sin necesidad de conocimientos técnicos.
