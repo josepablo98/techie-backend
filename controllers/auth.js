@@ -38,7 +38,7 @@ if (!email.endsWith("@gmail.com")) {
   if (name.length < 3) {
     return res.status(400).json({
       ok: false,
-      message: "El nombre debe tener al menos 3 caracteres",
+      message: "El nombre debe tener al menos tres caracteres",
     });
   }
 
