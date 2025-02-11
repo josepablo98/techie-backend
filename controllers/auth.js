@@ -59,6 +59,8 @@ const createUser = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
@@ -165,6 +167,8 @@ const loginUser = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
@@ -238,6 +242,8 @@ const requestPasswordReset = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
@@ -330,6 +336,8 @@ const resetPassword = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
@@ -362,7 +370,7 @@ const resetPassword = async (req, res = response) => {
         message: "La nueva contraseña no puede ser igual a la actual",
       });
     }
-    let passwordHistory = user.passwordHistory;
+    let passwordHistory = user.passwordHistory ? JSON.parse(user.passwordHistory) : [];
     // Verificar si la nueva contraseña ya fue usada en las últimas 5
     for (const oldPassword of passwordHistory) {
       if (bcrypt.compareSync(newPassword, oldPassword)) {
@@ -445,6 +453,8 @@ const requestVerifiedEmail = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
@@ -540,6 +550,8 @@ const verifyEmail = async (req, res = response) => {
       password: "root",
       database: "techie",
       port: 3306,
+      connectionLimit: 20,
+      acquireTimeout: 10000
     });
 
     const connection = await pool.getConnection();
