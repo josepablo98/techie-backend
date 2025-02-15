@@ -1,5 +1,6 @@
 const { response } = require('express');
 const jsonwebtoken = require('jsonwebtoken');
+const mariadb = require("mariadb");
 
 const validatejwt = (req, res = response, next) => {
   const token = req.header('x-token');
@@ -23,7 +24,44 @@ const validatejwt = (req, res = response, next) => {
     });
   }
 
-  next();
+  const pool = mariadb.createPool({
+    host: "localhost",
+    user: "root",
+    password: "root",
+    database: "techie",
+    port: 3306,
+    connectionLimit: 20,
+    acquireTimeout: 10000
+  });
+
+  pool.getConnection()
+    .then(conn => {
+      conn.query("SELECT * FROM user WHERE email = ?", [req.email])
+        .then(rows => {
+          if (rows.length === 0) {
+            conn.release();
+            return res.status(401).json({
+              ok: false,
+              message: 'La cuenta ya no existe'
+            });
+          }
+          conn.release();
+          next(); // Mueve next() aquí para asegurarte de que solo se llame una vez
+        })
+        .catch(err => {
+          conn.release();
+          return res.status(500).json({
+            ok: false,
+            message: 'Error en la base de datos'
+          });
+        });
+    })
+    .catch(err => {
+      return res.status(500).json({
+        ok: false,
+        message: 'Error en la base de datos'
+      });
+    });
 }
 
 module.exports = {
