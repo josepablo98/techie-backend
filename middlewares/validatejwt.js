@@ -1,6 +1,6 @@
 const { response } = require('express');
 const jsonwebtoken = require('jsonwebtoken');
-const mariadb = require("mariadb");
+const pool = require('../db');
 
 const validatejwt = (req, res = response, next) => {
   const token = req.header('x-token');
@@ -23,16 +23,6 @@ const validatejwt = (req, res = response, next) => {
       message: 'Invalid token'
     });
   }
-
-  const pool = mariadb.createPool({
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "techie",
-    port: 3306,
-    connectionLimit: 20,
-    acquireTimeout: 10000
-  });
 
   pool.getConnection()
     .then(conn => {

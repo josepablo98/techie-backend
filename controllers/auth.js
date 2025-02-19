@@ -2,7 +2,7 @@ const { response } = require("express");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../helpers/generateToken");
 const jsonwebtoken = require("jsonwebtoken");
-const mariadb = require("mariadb");
+const pool = require("../db");
 const nodemailer = require("nodemailer");
 
 const createUser = async (req, res = response) => {
@@ -53,18 +53,8 @@ const createUser = async (req, res = response) => {
   const hashedPassword = bcrypt.hashSync(password, salt);
 
   try {
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
 
     const connection = await pool.getConnection();
-
     const rows = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
     if (rows.length > 0) {
@@ -98,14 +88,14 @@ const createUser = async (req, res = response) => {
           pass: process.env.EMAIL_PASS,
         },
       });
-  
+
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Verificación de cuenta',
         text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: http://localhost:3000/verify-email?token=${token}`,
       };
-  
+
       await transporter.sendMail(mailOptions);
     } catch (error) {
       return res.status(500).json({
@@ -161,16 +151,6 @@ const loginUser = async (req, res = response) => {
 
 
   try {
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
-
     const connection = await pool.getConnection();
     const [rows] = await connection.query(
       "SELECT * FROM user WHERE email = ?",
@@ -236,16 +216,6 @@ const requestPasswordReset = async (req, res = response) => {
   }
 
   try {
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
-
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
@@ -329,17 +299,6 @@ const resetPassword = async (req, res = response) => {
 
   try {
     const { email } = jsonwebtoken.verify(token, process.env.SECRET_JWT_SEED);
-
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
-
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
@@ -359,10 +318,10 @@ const resetPassword = async (req, res = response) => {
       });
     }
 
-    
+
     const salt = bcrypt.genSaltSync();
     const hashedNewPassword = bcrypt.hashSync(newPassword, salt);
-    
+
     if (bcrypt.compareSync(newPassword, user.password)) {
       connection.release();
       return res.status(400).json({
@@ -447,16 +406,6 @@ const requestVerifiedEmail = async (req, res = response) => {
   // el usuario no podra hacer login hasta que verifique su cuenta
 
   try {
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
-
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
@@ -543,17 +492,6 @@ const verifyEmail = async (req, res = response) => {
 
   try {
     const { email } = jsonwebtoken.verify(token, process.env.SECRET_JWT_SEED);
-
-    const pool = mariadb.createPool({
-      host: "localhost",
-      user: "root",
-      password: "root",
-      database: "techie",
-      port: 3306,
-      connectionLimit: 20,
-      acquireTimeout: 10000
-    });
-
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
@@ -565,7 +503,7 @@ const verifyEmail = async (req, res = response) => {
       });
     }
 
-    if(user.isVerified) {
+    if (user.isVerified) {
       connection.release();
       return res.status(400).json({
         ok: false,
@@ -604,23 +542,23 @@ const verifyEmail = async (req, res = response) => {
 }
 
 const revalidateToken = async (req, res = response) => {
-    const { name, email } = req;
-    const token = await generateToken(email, name);
+  const { name, email } = req;
+  const token = await generateToken(email, name);
 
-    res.json({
-      ok: true,
-      token,
-      name,
-      email
-    });
-  };
+  res.json({
+    ok: true,
+    token,
+    name,
+    email
+  });
+};
 
-  module.exports = {
-    createUser,
-    loginUser,
-    revalidateToken,
-    requestPasswordReset,
-    resetPassword,
-    requestVerifiedEmail,
-    verifyEmail
-  };
+module.exports = {
+  createUser,
+  loginUser,
+  revalidateToken,
+  requestPasswordReset,
+  resetPassword,
+  requestVerifiedEmail,
+  verifyEmail
+};
