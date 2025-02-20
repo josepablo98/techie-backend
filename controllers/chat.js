@@ -1,24 +1,27 @@
 const pool = require("../db");
+const jwt = require("jsonwebtoken");
 
 const createChat = async (req, res) => {
-    const { email, message } = req.body;
+    const { token, message } = req.body;
 
     if (Object.keys(req.body).length !== 2) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba email y message",
+            message: "Petición incorrecta. Se esperaba token y message",
         });
     }
 
-    if (!email || !message) {
+    if (!token || !message) {
         return res.status(400).json({
             ok: false,
-            message: "Falta email o mensaje",
+            message: "Falta token o mensaje",
         });
     }
 
     try {
         const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
 
         const rows = await connection.query("SELECT * FROM user WHERE email = ?", [
             email,
@@ -57,19 +60,19 @@ const createChat = async (req, res) => {
 
 const updateChat = async (req, res) => {
     const { id } = req.params;
-    const { email, message } = req.body;
+    const { token, message } = req.body;
 
     if (Object.keys(req.body).length !== 2) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba email y message",
+            message: "Petición incorrecta. Se esperaba token y message",
         });
     }
 
-    if (!message || !email) {
+    if (!message || !token) {
         return res.status(400).json({
             ok: false,
-            message: "Falta mensaje o email",
+            message: "Falta mensaje o token",
         });
     }
 
@@ -82,6 +85,8 @@ const updateChat = async (req, res) => {
 
     try {
         const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
 
         const user = await connection.query("SELECT * FROM user WHERE email = ?", [
             email,
@@ -133,24 +138,26 @@ const updateChat = async (req, res) => {
 };
 
 const getChatsByUserId = async (req, res) => {
-    const { email } = req.body;
+    const { token } = req.body;
 
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba email",
+            message: "Petición incorrecta. Se esperaba token",
         });
     }
 
-    if (!email) {
+    if (!token) {
         return res.status(400).json({
             ok: false,
-            message: "Falta email",
+            message: "Falta token",
         });
     }
 
     try {
         const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
 
         const user = await connection.query("SELECT * FROM user WHERE email = ?", [
             email,
@@ -191,25 +198,27 @@ const getChatsByUserId = async (req, res) => {
 };
 
 const getChatsByUserIdAndChatId = async (req, res) => {
-    const { email } = req.body;
+    const { token } = req.body;
     const { id } = req.params;
 
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba email",
+            message: "Petición incorrecta. Se esperaba token",
         });
     }
 
-    if (!email || !id) {
+    if (!token || !id) {
         return res.status(400).json({
             ok: false,
-            message: "Falta email o id",
+            message: "Falta token o id",
         });
     }
 
     try {
         const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
 
         const user = await connection.query("SELECT * FROM user WHERE email = ?", [
             email,
@@ -250,25 +259,27 @@ const getChatsByUserIdAndChatId = async (req, res) => {
 }
 
 const updateTitle = async (req, res) => {
-    const { email, title } = req.body;
+    const { token, title } = req.body;
     const { id } = req.params;
 
     if (Object.keys(req.body).length !== 2) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba email y title",
+            message: "Petición incorrecta. Se esperaba token y title",
         });
     }
 
-    if (!email || !id || !title) {
+    if (!token || !id || !title) {
         return res.status(400).json({
             ok: false,
-            message: "Falta email, id o title",
+            message: "Falta token, id o title",
         });
     }
 
     try {
         const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
 
         const user = await connection.query("SELECT * FROM user WHERE email = ?", [
             email,
@@ -303,6 +314,69 @@ const updateTitle = async (req, res) => {
         res.status(200).json({
             ok: true,
             message: "Título actualizado correctamente",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            message: "Error en el servidor",
+            error,
+        });
+    }
+}
+
+const deleteChat = async (req, res) => {
+    const { token } = req.body;
+    const { id } = req.params;
+
+    if (Object.keys(req.body).length !== 1) {
+        return res.status(400).json({
+            ok: false,
+            message: "Petición incorrecta. Se esperaba token",
+        });
+    }
+
+    if (!token || !id) {
+        return res.status(400).json({
+            ok: false,
+            message: "Falta token o id",
+        });
+    }
+
+    try {
+        const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
+
+        const user = await connection.query("SELECT * FROM user WHERE email = ?", [
+            email,
+        ]);
+
+        if (user.length === 0) {
+            return res.status(404).json({
+                ok: false,
+                message: "Usuario no encontrado",
+            });
+        }
+
+        const chat = await connection.query(
+            "SELECT * FROM chat WHERE id = ? AND userId = ?",
+            [id, user[0].id]
+        );
+
+        if (chat.length === 0) {
+            return res.status(404).json({
+                ok: false,
+                message: "Chat no encontrado o no pertenece al usuario",
+            });
+        }
+
+        await connection.query("DELETE FROM chat WHERE id = ?", [id]);
+
+        connection.release();
+
+        res.status(200).json({
+            ok: true,
+            message: "Chat eliminado correctamente",
         });
     } catch (error) {
         return res.status(500).json({
@@ -392,5 +466,6 @@ module.exports = {
     getChatsByUserId,
     getChatsByUserIdAndChatId,
     updateTitle,
+    deleteChat,
     fetchGeminiApi
 };
