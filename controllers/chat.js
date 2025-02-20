@@ -164,7 +164,7 @@ const getChatsByUserId = async (req, res) => {
         }
 
         const chats = await connection.query(
-            "SELECT * FROM chat WHERE userId = ?",
+            "SELECT id, title FROM chat WHERE userId = ?",
             [user[0].id]
         );
 
@@ -357,8 +357,6 @@ const fetchGeminiApi = async (req, res) => {
             Teniendo en cuenta este contexto, responde de manera coherente y natural a la pregunta actual:
             ${textPromptingEngineering}`;
     }
-
-    console.log(textPromptingEngineering);
 
     url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.API_KEY}`;
     try {

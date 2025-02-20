@@ -8,7 +8,7 @@ const generateToken = (email, name) => {
       expiresIn: '2h'
     }, (err, token) => {
       if (err) {
-        console.log(err);
+        console.error(err);
         reject('Error generating token');
       }
 
