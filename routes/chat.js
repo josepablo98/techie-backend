@@ -1,12 +1,11 @@
 const { Router } = require("express");
 const { createChat, updateChat, getChatsByUserId,
-    getChatsByUserIdAndChatId, fetchGeminiApi,
+    getChatsByUserIdAndChatId,
     updateTitle, deleteChat } = require('../controllers/chat');
 
 const router = Router();
 
 
-router.post("/fetch", fetchGeminiApi);
 router.post("/create", createChat);
 router.post("/getchat/:id", getChatsByUserIdAndChatId);
 router.post("/getchats", getChatsByUserId);

@@ -387,85 +387,11 @@ const deleteChat = async (req, res) => {
     }
 }
 
-const fetchGeminiApi = async (req, res) => {
-
-    const { text, context } = req.body;
-
-
-    if (!text) {
-        return res.status(400).json({
-            ok: false,
-            message: "Falta text",
-        });
-    }
-
-    let textPromptingEngineering = `Debes responder únicamente preguntas sobre teoría de programación, sea el lenguaje de programación que sea.  
-        Si la pregunta del usuario no está relacionada con este tema, responde de forma educada explicando que solo puedes ayudar con asuntos relacionados con la programación.  
-
-        Tu respuesta debe sonar natural y bien estructurada, sin repetir frases innecesarias.  
-        Si el usuario insiste en preguntar sobre otro tema, recuérdale amablemente que solo puedes responder sobre teoría de programación.
-        Si el usuario te saluda o te agradece, responde de manera educada y amigable. Siempre debes ser simpático y educado, evitando respuestas cortantes o frías.
-        Si el usuario te hace una pregunta que no entiendes, pide que la reformule de manera más clara y específica.
-        Si el usuario insulta o hace comentarios inapropiados, responde de manera educada y profesional, diciendo que no puedes responder a ese tipo de comentarios.
-        Si el usuario te pide información personal o información que puede ser usada para realizar actividades ilegales, responde de manera profesional y cortés, diciendo que no puedes proporcionar esa información.
-        Si el usuario te pide generar código, no lo hagas. Recuerda que solo puedes responder preguntas sobre teoría de lenguajes de programación.
-        Aunque tú sabes que es sobre la "teoría de programación", cuando lo menciones en tus respuestas, utiliza el término "programación" para que el usuario entienda mejor.
-
-        Antes de responder, genera un título breve y natural que no supere las seis o siete palabras basado en la pregunta del usuario.  
-        El título debe resumir la idea principal de la pregunta de manera clara y amigable.El formato sería el siguiente: titulo//mensaje, siendo "título" el título que tú des, y "mensaje" el mensaje
-        de respuesta en si. No uses títulos genéricos como "Lenguaje Teoría" siendo el "Lenguaje" el lenguaje de programación sobre el que
-        te está preguntando el usuario.  
-        Te repito que separes el título del mensaje con "//".
-
-        La pregunta o solicitud que el usuario ha hecho es la siguiente: "${text}".`;
-
-    if (context) {
-        const formattedContext = context
-            .map(({ index, message }) => (index % 2 === 0 ? `Usuario: ${message}` : `Tú: ${message}`))
-            .join("\n");
-
-        textPromptingEngineering = `
-            Antes de esta pregunta, la conversación ha sido la siguiente:
-            ${formattedContext}
-
-            Teniendo en cuenta este contexto, responde de manera coherente y natural a la pregunta actual:
-            ${textPromptingEngineering}`;
-    }
-
-    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.API_KEY}`;
-    try {
-        const resp = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "contents": [{
-                    "parts": [{ "text": textPromptingEngineering }]
-                }]
-            })
-        })
-        const data = await resp.json()
-        return res.status(200).json({
-            ok: true,
-            response: data.candidates[0].content.parts[0].text
-        })
-    } catch (error) {
-        return res.status(500).json({
-            ok: false,
-            message: "Error en el servidor",
-            error,
-        });
-    }
-
-}
-
 module.exports = {
     createChat,
     updateChat,
     getChatsByUserId,
     getChatsByUserIdAndChatId,
     updateTitle,
-    deleteChat,
-    fetchGeminiApi
+    deleteChat
 };
