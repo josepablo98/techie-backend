@@ -520,6 +520,7 @@ const verifyEmail = async (req, res = response) => {
     }
 
     await connection.query("UPDATE user SET isVerified = true WHERE email = ?", [email]);
+    await connection.query("INSERT INTO settings (userId) VALUES (?)", [user.id]);
     connection.release();
 
     res.status(200).json({
