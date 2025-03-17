@@ -3,7 +3,7 @@ const pool = require('../db');
 const jsonwebtoken = require('jsonwebtoken');
 
 const updateSettings = async (req, res = response) => {
-    const { token, theme, language, datailLevel, autoSaveChats } = req.body;
+    const { token, theme, language, detailLevel, autoSaveChats } = req.body;
 
     if (!token) {
         return res.status(400).json({
@@ -15,7 +15,7 @@ const updateSettings = async (req, res = response) => {
     if (Object.keys(req.body).length < 2 || Object.keys(req.body).length > 5) {
         return res.status(400).json({
             ok: false,
-            message: 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, datailLevel, autoSaveChats'
+            message: 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats'
         });
     }
 
@@ -32,17 +32,16 @@ const updateSettings = async (req, res = response) => {
                 message: 'Usuario no encontrado'
             });
         }
-
         if (theme) {
             await connection.query("UPDATE settings SET theme = ? WHERE userId = ?", [theme, user[0].id]);
         }
         if (language) {
             await connection.query("UPDATE settings SET language = ? WHERE userId = ?", [language, user[0].id]);
         }
-        if (datailLevel) {
-            await connection.query("UPDATE settings SET datailLevel = ? WHERE userId = ?", [datailLevel, user[0].id]);
+        if (detailLevel) {
+            await connection.query("UPDATE settings SET detailLevel = ? WHERE userId = ?", [detailLevel, user[0].id]);
         }
-        if (autoSaveChats) {
+        if (autoSaveChats !== undefined) {
             await connection.query("UPDATE settings SET autoSaveChats = ? WHERE userId = ?", [autoSaveChats, user[0].id]);
         }
 

@@ -542,6 +542,55 @@ const verifyEmail = async (req, res = response) => {
   }
 }
 
+const deleteUser = async (req, res = response) => {
+  const { token } = req.body;
+
+  if (Object.keys(req.body).length !== 1) {
+    return res.status(400).json({
+      ok: false,
+      message: "El cuerpo debe contener un campo exactamente: token",
+    });
+  }
+
+  if (!token) {
+    return res.status(400).json({
+      ok: false,
+      message: "Token es requerido",
+    });
+  }
+
+  try {
+    const connection = await pool.getConnection();
+    const { email } = jsonwebtoken.verify(token, process.env.SECRET_JWT_SEED);
+    const [user] = await connection.query("SELECT id FROM user WHERE email = ?", [email]);
+    if (user.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        ok: false,
+        message: "Usuario no encontrado o token inválido",
+      });
+    }
+
+    await connection.query("DELETE FROM settings WHERE userId = ?", [user.id]);
+    await connection.query("DELETE FROM chat WHERE userId = ?", [user.id]);
+    await connection.query("DELETE FROM user WHERE email = ?", [email]);
+    connection.release();
+
+    res.status(200).json({
+      ok: true,
+      message: "Cuenta eliminada correctamente",
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      message: "No es posible eliminar la cuenta, contacte con el administrador",
+    });
+  }
+
+}
+
 const revalidateToken = async (req, res = response) => {
   const { name, email } = req;
   const token = await generateToken(email, name);
@@ -561,5 +610,6 @@ module.exports = {
   requestPasswordReset,
   resetPassword,
   requestVerifiedEmail,
-  verifyEmail
+  verifyEmail,
+  deleteUser
 };
