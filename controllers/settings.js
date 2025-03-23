@@ -27,6 +27,7 @@ const updateSettings = async (req, res = response) => {
         const user = await connection.query("SELECT id FROM user WHERE email = ?", [email]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: 'Usuario no encontrado'
@@ -86,6 +87,7 @@ const getSettings = async (req, res = response) => {
         const user = await connection.query("SELECT id FROM user WHERE email = ?", [email]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: 'Usuario no encontrado'

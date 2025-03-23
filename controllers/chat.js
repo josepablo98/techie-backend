@@ -28,13 +28,26 @@ const createChat = async (req, res) => {
         ]);
 
         if (rows.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
             });
         }
-
         const userId = rows[0].id;
+
+
+        const autoSaveChats = await connection.query("SELECT autoSaveChats FROM settings WHERE userId = ?", [userId]);
+        const tempChats = !autoSaveChats[0].autoSaveChats;
+
+        if (tempChats) {
+            connection.release();
+            return res.status(403).json({
+                ok: false,
+                message: "No se puede crear un chat si la opción de guardado automático está desactivada"
+            })
+        }
+
         const date = new Date();
         const messages = JSON.stringify([{ index: 0, message: message }]);
 
@@ -93,6 +106,7 @@ const updateChat = async (req, res) => {
         ]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
@@ -105,6 +119,7 @@ const updateChat = async (req, res) => {
         );
 
         if (chat.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Chat no encontrado o no pertenece al usuario",
@@ -164,6 +179,7 @@ const getChatsByUserId = async (req, res) => {
         ]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
@@ -176,6 +192,7 @@ const getChatsByUserId = async (req, res) => {
         );
 
         if (chats.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "No se han encontrado chats",
@@ -225,6 +242,7 @@ const getChatsByUserIdAndChatId = async (req, res) => {
         ]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
@@ -237,6 +255,7 @@ const getChatsByUserIdAndChatId = async (req, res) => {
         );
 
         if (chat.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Chat no encontrado o no pertenece al usuario",
@@ -286,6 +305,7 @@ const updateTitle = async (req, res) => {
         ]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
@@ -298,6 +318,7 @@ const updateTitle = async (req, res) => {
         );
 
         if (chat.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Chat no encontrado o no pertenece al usuario",
@@ -352,6 +373,7 @@ const deleteChat = async (req, res) => {
         ]);
 
         if (user.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado",
@@ -364,6 +386,7 @@ const deleteChat = async (req, res) => {
         );
 
         if (chat.length === 0) {
+            connection.release();
             return res.status(404).json({
                 ok: false,
                 message: "Chat no encontrado o no pertenece al usuario",

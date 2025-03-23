@@ -58,15 +58,14 @@ const createUser = async (req, res = response) => {
     const rows = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
     if (rows.length > 0) {
+      connection.release();
       if (!rows[0].isVerified) {
-        connection.release();
         return res.status(400).json({
           ok: false,
           message: "El email ya está registrado pero la cuenta no ha sido verificada",
           verified: false,
         });
       }
-      connection.release();
       return res.status(400).json({
         ok: false,
         message: "El email ya está registrado",
@@ -98,6 +97,7 @@ const createUser = async (req, res = response) => {
 
       await transporter.sendMail(mailOptions);
     } catch (error) {
+      connection.release();
       return res.status(500).json({
         ok: false,
         message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
@@ -158,6 +158,7 @@ const loginUser = async (req, res = response) => {
     );
     connection.release();
     if (!rows) {
+      connection.release();
       return res.status(400).json({
         ok: false,
         message: "Usuario o contraseña incorrectos",
@@ -166,6 +167,7 @@ const loginUser = async (req, res = response) => {
 
     const user = { ...rows }
     if (!bcrypt.compareSync(password, user.password)) {
+      connection.release();
       return res.status(400).json({
         ok: false,
         message: "Usuario o contraseña incorrectos",
@@ -173,6 +175,7 @@ const loginUser = async (req, res = response) => {
     }
 
     if (!user.isVerified) {
+      connection.release();
       return res.status(400).json({
         ok: false,
         message: "La cuenta no ha sido verificada",
@@ -181,6 +184,8 @@ const loginUser = async (req, res = response) => {
     }
 
     const token = await generateToken(user.email, user.name);
+
+    connection.release();
 
     res.status(200).json({
       ok: true,
@@ -241,22 +246,33 @@ const requestPasswordReset = async (req, res = response) => {
     const token = await generateToken(email, user.name);
     const tokenExpires = new Date(currentTime.getTime() + 2 * 60 * 60 * 1000); // 2 horas
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Restablecimiento de contraseña',
-      text: `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: http://localhost:3000/reset-password?token=${token}`,
-    };
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
 
-    await transporter.sendMail(mailOptions);
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Restablecimiento de contraseña',
+        text: `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: http://localhost:3000/reset-password?token=${token}`,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+    } catch {
+      connection.release();
+      return res.status(500).json({
+        ok: false,
+        message: "No es posible enviar el correo de restablecimiento, es posible que el correo no exista",
+      });
+    }
+
     await connection.query("UPDATE user SET lastPasswordResetRequest = ?, passwordResetToken = ?, passwordResetTokenExpires = ?, passwordResetTokenUsed = false WHERE email = ?", [currentTime, token, tokenExpires, email]);
     connection.release();
 
@@ -439,22 +455,32 @@ const requestVerifiedEmail = async (req, res = response) => {
     const token = await generateToken(email, user.name);
     const tokenExpires = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Verificación de cuenta',
-      text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: http://localhost:3000/verify-email?token=${token}`,
-    };
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Verificación de cuenta',
+        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: http://localhost:3000/verify-email?token=${token}`,
+      };
 
-    await transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions);
+    } catch {
+        connection.release();
+        return res.status(500).json({
+          ok: false,
+          message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
+        });
+    }
+
+
     await connection.query("UPDATE user SET lastVerifiedRequest = ?, verifiedToken = ?, verifiedExpires = ? WHERE email = ?", [currentTime, token, tokenExpires, email]);
     connection.release();
 
