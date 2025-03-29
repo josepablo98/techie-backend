@@ -473,11 +473,11 @@ const requestVerifiedEmail = async (req, res = response) => {
 
       await transporter.sendMail(mailOptions);
     } catch {
-        connection.release();
-        return res.status(500).json({
-          ok: false,
-          message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
-        });
+      connection.release();
+      return res.status(500).json({
+        ok: false,
+        message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
+      });
     }
 
 
