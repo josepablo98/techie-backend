@@ -2,12 +2,13 @@ const pool = require("../db");
 const jwt = require("jsonwebtoken");
 
 const createChat = async (req, res) => {
-    const { token, message } = req.body;
+    const { message } = req.body;
+    const { token } = req.cookies;
 
-    if (Object.keys(req.body).length !== 2) {
+    if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba token y message",
+            message: "Petición incorrecta. Se esperaba message",
         });
     }
 
@@ -73,12 +74,13 @@ const createChat = async (req, res) => {
 
 const updateChat = async (req, res) => {
     const { id } = req.params;
-    const { token, message } = req.body;
+    const { message } = req.body;
+    const { token } = req.cookies;
 
-    if (Object.keys(req.body).length !== 2) {
+    if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba token y message",
+            message: "Petición incorrecta. Se esperaba message",
         });
     }
 
@@ -153,14 +155,7 @@ const updateChat = async (req, res) => {
 };
 
 const getChatsByUserId = async (req, res) => {
-    const { token } = req.body;
-
-    if (Object.keys(req.body).length !== 1) {
-        return res.status(400).json({
-            ok: false,
-            message: "Petición incorrecta. Se esperaba token",
-        });
-    }
+    const { token } = req.cookies;
 
     if (!token) {
         return res.status(400).json({
@@ -215,15 +210,8 @@ const getChatsByUserId = async (req, res) => {
 };
 
 const getChatsByUserIdAndChatId = async (req, res) => {
-    const { token } = req.body;
+    const { token } = req.cookies;
     const { id } = req.params;
-
-    if (Object.keys(req.body).length !== 1) {
-        return res.status(400).json({
-            ok: false,
-            message: "Petición incorrecta. Se esperaba token",
-        });
-    }
 
     if (!token || !id) {
         return res.status(400).json({
@@ -278,13 +266,14 @@ const getChatsByUserIdAndChatId = async (req, res) => {
 }
 
 const updateTitle = async (req, res) => {
-    const { token, title } = req.body;
+    const { title } = req.body;
+    const { token } = req.cookies;
     const { id } = req.params;
 
-    if (Object.keys(req.body).length !== 2) {
+    if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba token y title",
+            message: "Petición incorrecta. Se esperaba title",
         });
     }
 
@@ -346,15 +335,8 @@ const updateTitle = async (req, res) => {
 }
 
 const deleteChat = async (req, res) => {
-    const { token } = req.body;
+    const { token } = req.cookies;
     const { id } = req.params;
-
-    if (Object.keys(req.body).length !== 1) {
-        return res.status(400).json({
-            ok: false,
-            message: "Petición incorrecta. Se esperaba token",
-        });
-    }
 
     if (!token || !id) {
         return res.status(400).json({
@@ -410,11 +392,64 @@ const deleteChat = async (req, res) => {
     }
 }
 
+const deleteAllChats = async (req, res) => {
+    const { token } = req.cookies;
+
+    if (!token) {
+        return res.status(400).json({
+            ok: false,
+            message: "Falta token",
+        });
+    }
+
+    try {
+        const connection = await pool.getConnection();
+
+        const { email } = jwt.verify(token, process.env.SECRET_JWT_SEED);
+        const user = await connection.query("SELECT * FROM user WHERE email = ?", [
+            email,
+        ]);
+        if (user.length === 0) {
+            connection.release();
+            return res.status(404).json({
+                ok: false,
+                message: "Usuario no encontrado",
+            });
+        }
+        const chats = await connection.query(
+            "SELECT * FROM chat WHERE userId = ?",
+            [user[0].id]
+        );
+
+        if (chats.length === 0) {
+            connection.release();
+            return res.status(404).json({
+                ok: false,
+                message: "No se han encontrado chats",
+            });
+        }
+        await connection.query("DELETE FROM chat WHERE userId = ?", [user[0].id]);
+        connection.release();
+        res.status(200).json({
+            ok: true,
+            message: "Chats eliminados correctamente",
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            message: "Error en el servidor",
+            error,
+        });
+    }
+}
+
 module.exports = {
     createChat,
     updateChat,
     getChatsByUserId,
     getChatsByUserIdAndChatId,
     updateTitle,
-    deleteChat
+    deleteChat,
+    deleteAllChats
 };

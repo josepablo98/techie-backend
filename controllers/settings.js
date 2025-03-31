@@ -3,7 +3,8 @@ const pool = require('../db');
 const jsonwebtoken = require('jsonwebtoken');
 
 const updateSettings = async (req, res = response) => {
-    const { token, theme, language, detailLevel, autoSaveChats } = req.body;
+    const { theme, language, detailLevel, autoSaveChats } = req.body;
+    const { token } = req.cookies;
 
     if (!token) {
         return res.status(400).json({
@@ -12,7 +13,7 @@ const updateSettings = async (req, res = response) => {
         });
     }
 
-    if (Object.keys(req.body).length < 2 || Object.keys(req.body).length > 5) {
+    if (Object.keys(req.body).length < 1 || Object.keys(req.body).length > 4) {
         return res.status(400).json({
             ok: false,
             message: 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats'
@@ -63,19 +64,12 @@ const updateSettings = async (req, res = response) => {
 }
 
 const getSettings = async (req, res = response) => {
-    const { token } = req.body;
+    const { token } = req.cookies;
 
     if (!token) {
         return res.status(400).json({
             ok: false,
             message: 'Token es requerido'
-        })
-    }
-
-    if (Object.keys(req.body).length > 1) {
-        return res.status(400).json({
-            ok: false,
-            message: 'Solo se permite el token'
         })
     }
 

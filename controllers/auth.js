@@ -92,7 +92,7 @@ const createUser = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Verificación de cuenta',
-        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: http://localhost:3000/verify-email?token=${token}`,
+        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -187,12 +187,21 @@ const loginUser = async (req, res = response) => {
 
     connection.release();
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,       // Debe ser true en HTTPS
+      sameSite: "none",   // Para permitir cookies cross-site
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    
+
+
     res.status(200).json({
       ok: true,
       email: user.email,
       name: user.name,
       message: "Acceso correcto",
-      token,
     });
   } catch (error) {
     console.log(error);
@@ -260,7 +269,7 @@ const requestPasswordReset = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Restablecimiento de contraseña',
-        text: `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: http://localhost:3000/reset-password?token=${token}`,
+        text: `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: https://localhost:3000/reset-password?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -468,7 +477,7 @@ const requestVerifiedEmail = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Verificación de cuenta',
-        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: http://localhost:3000/verify-email?token=${token}`,
+        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -569,14 +578,7 @@ const verifyEmail = async (req, res = response) => {
 }
 
 const deleteUser = async (req, res = response) => {
-  const { token } = req.body;
-
-  if (Object.keys(req.body).length !== 1) {
-    return res.status(400).json({
-      ok: false,
-      message: "El cuerpo debe contener un campo exactamente: token",
-    });
-  }
+  const { token } = req.cookies;
 
   if (!token) {
     return res.status(400).json({
@@ -629,6 +631,19 @@ const revalidateToken = async (req, res = response) => {
   });
 };
 
+const logoutUser = async (req, res = response) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/"
+  });
+  res.status(200).json({
+    ok: true,
+    message: "Sesión cerrada correctamente"
+  })
+}
+
 module.exports = {
   createUser,
   loginUser,
@@ -637,5 +652,6 @@ module.exports = {
   resetPassword,
   requestVerifiedEmail,
   verifyEmail,
-  deleteUser
+  deleteUser,
+  logoutUser,
 };

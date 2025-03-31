@@ -3,7 +3,7 @@ const jsonwebtoken = require('jsonwebtoken');
 const pool = require('../db');
 
 const validatejwt = (req, res = response, next) => {
-  const token = req.header('x-token');
+  const { token } = req.cookies;
 
   if (!token) {
     return res.status(401).json({
