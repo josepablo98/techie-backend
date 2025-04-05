@@ -7,45 +7,47 @@ const nodemailer = require("nodemailer");
 
 const createUser = async (req, res = response) => {
   const { name, email, password } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
+
   if (Object.keys(req.body).length !== 3) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener tres campos exactamente: name, email y password",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener tres campos exactamente: name, email y password" : "The body must contain exactly three fields: name, email and password",
     });
   }
 
   if (!name || !email || !password) {
     return res.status(400).json({
       ok: false,
-      message: "Nombre, email o contraseña no proporcionados",
+      message: acceptedLanguage === "es" ? "Nombre, email o contraseña no proporcionados" : "Name, email or password not provided",
     });
   }
 
   if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
     return res.status(400).json({
       ok: false,
-      message: "Email no válido",
+      message: acceptedLanguage === "es" ? "Email no válido" : "Invalid email",
     });
   }
 
   if (!email.endsWith("@gmail.com")) {
     return res.status(400).json({
       ok: false,
-      message: "Solo se permiten correos de Gmail",
+      message: acceptedLanguage === "es" ? "Solo se permiten correos de Gmail" : "Only Gmail accounts are allowed",
     });
   }
 
   if (name.length < 2) {
     return res.status(400).json({
       ok: false,
-      message: "El nombre debe tener al menos dos caracteres",
+      message: acceptedLanguage === "es" ? "El nombre debe tener al menos dos caracteres" : "Name must be at least two characters long",
     });
   }
 
-  if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+  if (!/^(?=.*[A-Z])(?=.*\d)[^\sñ]{8,}$/.test(password)) {
     return res.status(400).json({
       ok: false,
-      message: "La contraseña debe tener al menos 8 caracteres y contener al menos un número",
+      message: acceptedLanguage === "es" ? "La contraseña debe tener al menos 8 caracteres, al menos una letra mayúscula y un número" : "Password must be at least 8 characters long, contain at least one uppercase letter and one number",
     });
   }
 
@@ -62,13 +64,13 @@ const createUser = async (req, res = response) => {
       if (!rows[0].isVerified) {
         return res.status(400).json({
           ok: false,
-          message: "El email ya está registrado pero la cuenta no ha sido verificada",
+          message: acceptedLanguage === "es" ? "El email ya está registrado pero la cuenta no ha sido verificada" : "The email is already registered but the account has not been verified",
           verified: false,
         });
       }
       return res.status(400).json({
         ok: false,
-        message: "El email ya está registrado",
+        message: acceptedLanguage === "es" ? "El email ya está registrado" : "The email is already registered",
       });
     }
 
@@ -91,8 +93,8 @@ const createUser = async (req, res = response) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Verificación de cuenta',
-        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}`,
+        subject: acceptedLanguage === "es" ? 'Verificación de cuenta' : 'Account Verification',
+        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}` : `Please verify your account by clicking the following link: https://localhost:3000/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -100,7 +102,7 @@ const createUser = async (req, res = response) => {
       connection.release();
       return res.status(500).json({
         ok: false,
-        message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
+        message: acceptedLanguage === "es" ? "No es posible enviar el correo de verificación, es posible que el correo no exista" : "Unable to send verification email, the email may not exist",
       });
     }
     await connection.query(
@@ -114,37 +116,39 @@ const createUser = async (req, res = response) => {
       ok: true,
       email,
       name,
-      message: "Usuario creado correctamente y correo de verificación enviado",
+      message: acceptedLanguage === "es" ? "Usuario creado correctamente y correo de verificación enviado" : "User created successfully and verification email sent",
       token,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible registrarse, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible registrarse, contacte con el administrador" : "Unable to register, please contact the administrator",
     });
   }
 };
 
 const loginUser = async (req, res = response) => {
   const { email, password } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
+
   if (Object.keys(req.body).length !== 2) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener dos campos exactamente: email y password",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener dos campos exactamente: email y password" : "The body must contain exactly two fields: email and password",
     });
   }
   if (!email || !password) {
     return res.status(400).json({
       ok: false,
-      message: "Email o contraseña no proporcionados",
+      message: acceptedLanguage === "es" ? "Email o contraseña no proporcionados" : "Email or password not provided",
     });
   }
 
   if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
     return res.status(400).json({
       ok: false,
-      message: "Email no válido",
+      message: acceptedLanguage === "es" ? "Email no válido" : "Invalid email",
     });
   }
 
@@ -161,7 +165,7 @@ const loginUser = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "Usuario o contraseña incorrectos",
+        message: acceptedLanguage === "es" ? "Usuario o contraseña incorrectos" : "User or password incorrect",
       });
     }
 
@@ -170,7 +174,7 @@ const loginUser = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "Usuario o contraseña incorrectos",
+        message: acceptedLanguage === "es" ? "Usuario o contraseña incorrectos" : "User or password incorrect",
       });
     }
 
@@ -178,7 +182,7 @@ const loginUser = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "La cuenta no ha sido verificada",
+        message: acceptedLanguage === "es" ? "La cuenta no ha sido verificada" : "The account has not been verified",
         verified: false,
       });
     }
@@ -189,43 +193,44 @@ const loginUser = async (req, res = response) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,       // Debe ser true en HTTPS
+      secure: true,
       sameSite: "none",   // Para permitir cookies cross-site
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
-    
+
 
 
     res.status(200).json({
       ok: true,
       email: user.email,
       name: user.name,
-      message: "Acceso correcto",
+      message: acceptedLanguage === "es" ? "Acceso correcto" : "Access granted",
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible acceder, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible acceder, contacte con el administrador" : "Unable to access, please contact the administrator",
     });
   }
 };
 
 const requestPasswordReset = async (req, res = response) => {
   const { email } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
 
   if (Object.keys(req.body).length !== 1) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener un campo exactamente: email",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener un campo exactamente: email" : "The body must contain exactly one field: email",
     });
   }
 
   if (!email) {
     return res.status(400).json({
       ok: false,
-      message: "Email es requerido",
+      message: acceptedLanguage === "es" ? "Email es requerido" : "Email is required",
     });
   }
 
@@ -237,7 +242,7 @@ const requestPasswordReset = async (req, res = response) => {
       connection.release();
       return res.status(404).json({
         ok: false,
-        message: "Usuario no encontrado",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
       });
     }
 
@@ -248,7 +253,7 @@ const requestPasswordReset = async (req, res = response) => {
       connection.release();
       return res.status(429).json({
         ok: false,
-        message: "Debe esperar 1 minuto antes de solicitar otro cambio de contraseña",
+        message: acceptedLanguage === "es" ? "Debe esperar un minuto antes de solicitar otro enlace de restablecimiento" : "You must wait one minute before requesting another reset link",
       });
     }
 
@@ -268,8 +273,8 @@ const requestPasswordReset = async (req, res = response) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Restablecimiento de contraseña',
-        text: `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: https://localhost:3000/reset-password?token=${token}`,
+        subject: acceptedLanguage === "es" ? 'Restablecimiento de contraseña' : 'Password Reset',
+        text: acceptedLanguage === "es" ? `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: https://localhost:3000/reset-password?token=${token}` : `Please reset your password by clicking the following link: https://localhost:3000/reset-password?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -278,7 +283,7 @@ const requestPasswordReset = async (req, res = response) => {
       connection.release();
       return res.status(500).json({
         ok: false,
-        message: "No es posible enviar el correo de restablecimiento, es posible que el correo no exista",
+        message: acceptedLanguage === "es" ? "No es posible enviar el correo de restablecimiento, es posible que el correo no exista" : "Unable to send reset email, the email may not exist",
       });
     }
 
@@ -287,38 +292,39 @@ const requestPasswordReset = async (req, res = response) => {
 
     res.status(200).json({
       ok: true,
-      message: "Correo de restablecimiento de contraseña enviado",
+      message: acceptedLanguage === "es" ? "Correo de restablecimiento de contraseña enviado" : "Password reset email sent",
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible enviar el correo de restablecimiento, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible enviar el correo de restablecimiento, contacte con el administrador" : "Unable to send reset email, please contact the administrator",
     });
   }
 };
 
 const resetPassword = async (req, res = response) => {
   const { token, newPassword } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
 
   if (Object.keys(req.body).length !== 2) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener dos campos exactamente: token y newPassword",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener dos campos exactamente: token y newPassword" : "The body must contain exactly two fields: token and newPassword",
     });
   }
 
   if (!token || !newPassword) {
     return res.status(400).json({
       ok: false,
-      message: "Token o nueva contraseña son requeridos",
+      message: acceptedLanguage === "es" ? "Token o nueva contraseña son requeridos" : "Token or new password are required",
     });
   }
 
-  if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(newPassword)) {
+  if (!/^(?=.*[A-Z])(?=.*\d)[^\sñ]{8,}$/.test(newPassword)) {
     return res.status(400).json({
       ok: false,
-      message: "La nueva contraseña debe tener al menos 8 caracteres y contener al menos un número",
+      message: acceptedLanguage === "es" ? "La nueva contraseña debe tener al menos 8 caracteres, al menos una letra mayúscula y un número" : "New password must be at least 8 characters long, contain at least one uppercase letter and one number",
     });
   }
 
@@ -327,11 +333,13 @@ const resetPassword = async (req, res = response) => {
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
+    console.log(user);
+
     if (!user || user.passwordResetToken !== token || new Date() > new Date(user.passwordResetTokenExpires)) {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "Usuario no encontrado o enlace inválido",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado o enlace inválido" : "User not found or invalid link",
       });
     }
 
@@ -339,7 +347,7 @@ const resetPassword = async (req, res = response) => {
       connection.release();
       return res.status(403).json({
         ok: false,
-        message: "No es posible restablecer la contraseña ya que el enlace ha sido utilizado. Por favor, solicite un nuevo enlace",
+        message: acceptedLanguage === "es" ? "No es posible restablecer la contraseña ya que el enlace ha sido utilizado. Por favor, solicite un nuevo enlace" : "Unable to reset password as the link has been used. Please request a new link",
       });
     }
 
@@ -351,17 +359,17 @@ const resetPassword = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "La nueva contraseña no puede ser igual a la actual",
+        message: acceptedLanguage === "es" ? "La nueva contraseña no puede ser igual a la actual" : "New password cannot be the same as the current one",
       });
     }
-    let passwordHistory = user.passwordHistory ? JSON.parse(user.passwordHistory) : [];
+    let passwordHistory = user.passwordHistory ? user.passwordHistory : [];
     // Verificar si la nueva contraseña ya fue usada en las últimas 5
     for (const oldPassword of passwordHistory) {
       if (bcrypt.compareSync(newPassword, oldPassword)) {
         connection.release();
         return res.status(400).json({
           ok: false,
-          message: "No puedes reutilizar una de tus últimas cinco contraseñas",
+          message: acceptedLanguage === "es" ? "La nueva contraseña no puede ser igual a las últimas 5 usadas" : "New password cannot be the same as the last 5 used",
         });
       }
     }
@@ -378,51 +386,52 @@ const resetPassword = async (req, res = response) => {
 
     res.status(200).json({
       ok: true,
-      message: "Contraseña restablecida correctamente",
+      message: acceptedLanguage === "es" ? "Contraseña restablecida correctamente" : "Password reset successfully",
     });
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(400).json({
         ok: false,
-        message: "Usuario no encontrado o enlace inválido",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado o enlace inválido" : "User not found or invalid link",
       });
     }
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible restablecer la contraseña, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible restablecer la contraseña, contacte con el administrador" : "Unable to reset password, please contact the administrator",
     });
   }
 };
 
 const requestVerifiedEmail = async (req, res = response) => {
   const { email } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
 
   if (Object.keys(req.body).length !== 1) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener un campo exactamente: email",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener un campo exactamente: email" : "The body must contain exactly one field: email",
     });
   }
 
   if (!email) {
     return res.status(400).json({
       ok: false,
-      message: "Email es requerido",
+      message: acceptedLanguage === "es" ? "Email es requerido" : "Email is required",
     });
   }
 
   if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
     return res.status(400).json({
       ok: false,
-      message: "Email no válido",
+      message: acceptedLanguage === "es" ? "Email no válido" : "Invalid email",
     });
   }
 
   if (!email.endsWith("@gmail.com")) {
     return res.status(400).json({
       ok: false,
-      message: "Solo se permiten correos de Gmail",
+      message: acceptedLanguage === "es" ? "Solo se permiten correos de Gmail" : "Only Gmail accounts are allowed",
     });
   }
 
@@ -438,7 +447,7 @@ const requestVerifiedEmail = async (req, res = response) => {
       connection.release();
       return res.status(404).json({
         ok: false,
-        message: "Usuario no encontrado",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
       });
     }
 
@@ -446,7 +455,7 @@ const requestVerifiedEmail = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "La cuenta ya ha sido verificada",
+        message: acceptedLanguage === "es" ? "La cuenta ya ha sido verificada" : "The account has already been verified",
       });
     }
 
@@ -457,7 +466,7 @@ const requestVerifiedEmail = async (req, res = response) => {
       connection.release();
       return res.status(429).json({
         ok: false,
-        message: "Debe esperar un minuto antes de solicitar otro enlace de verificación",
+        message: acceptedLanguage === "es" ? "Debe esperar un minuto antes de solicitar otro enlace de verificación" : "You must wait one minute before requesting another verification link",
       });
     }
 
@@ -476,8 +485,8 @@ const requestVerifiedEmail = async (req, res = response) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Verificación de cuenta',
-        text: `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}`,
+        subject: acceptedLanguage === "es" ? 'Verificación de cuenta' : 'Account Verification',
+        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}` : `Please verify your account by clicking the following link: https://localhost:3000/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -485,7 +494,7 @@ const requestVerifiedEmail = async (req, res = response) => {
       connection.release();
       return res.status(500).json({
         ok: false,
-        message: "No es posible enviar el correo de verificación, es posible que el correo no exista",
+        message: acceptedLanguage === "es" ? "No es posible enviar el correo de verificación, es posible que el correo no exista" : "Unable to send verification email, the email may not exist",
       });
     }
 
@@ -495,7 +504,7 @@ const requestVerifiedEmail = async (req, res = response) => {
 
     res.status(200).json({
       ok: true,
-      message: "Correo de verificación de cuenta enviado",
+      message: acceptedLanguage === "es" ? "Correo de verificación de cuenta enviado" : "Account verification email sent",
     });
 
   }
@@ -503,25 +512,26 @@ const requestVerifiedEmail = async (req, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible enviar el correo de verificación, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible enviar el correo de verificación, contacte con el administrador" : "Unable to send verification email, please contact the administrator",
     });
   }
 }
 
 const verifyEmail = async (req, res = response) => {
   const { token } = req.body;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
 
   if (Object.keys(req.body).length !== 1) {
     return res.status(400).json({
       ok: false,
-      message: "El cuerpo debe contener un campo exactamente: token",
+      message: acceptedLanguage === "es" ? "El cuerpo debe contener un campo exactamente: token" : "The body must contain exactly one field: token",
     });
   }
 
   if (!token) {
     return res.status(400).json({
       ok: false,
-      message: "Token es requerido",
+      message: acceptedLanguage === "es" ? "Token es requerido" : "Token is required",
     });
   }
 
@@ -534,7 +544,7 @@ const verifyEmail = async (req, res = response) => {
       connection.release();
       return res.status(404).json({
         ok: false,
-        message: "Usuario no encontrado",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
       });
     }
 
@@ -542,7 +552,7 @@ const verifyEmail = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "La cuenta ya ha sido verificada",
+        message: acceptedLanguage === "es" ? "La cuenta ya ha sido verificada" : "The account has already been verified",
       });
     }
 
@@ -550,40 +560,41 @@ const verifyEmail = async (req, res = response) => {
       connection.release();
       return res.status(400).json({
         ok: false,
-        message: "Enlace inválido",
+        message: acceptedLanguage === "es" ? "Enlace inválido" : "Invalid link",
       });
     }
 
     await connection.query("UPDATE user SET isVerified = true WHERE email = ?", [email]);
-    await connection.query("INSERT INTO settings (userId) VALUES (?)", [user.id]);
+    await connection.query("INSERT INTO settings (userId, language) VALUES (?, ?)", [user.id, acceptedLanguage]);
     connection.release();
 
     res.status(200).json({
       ok: true,
-      message: "Cuenta verificada correctamente",
+      message: acceptedLanguage === "es" ? "Cuenta verificada correctamente" : "Account verified successfully",
     });
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(400).json({
         ok: false,
-        message: "Usuario no encontrado o enlace inválido",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado o enlace inválido" : "User not found or invalid link",
       });
     }
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible verificar la cuenta, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible verificar la cuenta, contacte con el administrador" : "Unable to verify the account, please contact the administrator",
     });
   }
 }
 
 const deleteUser = async (req, res = response) => {
   const { token } = req.cookies;
+  const acceptedLanguage = req.headers["accept-language"] || "es";
 
   if (!token) {
     return res.status(400).json({
       ok: false,
-      message: "Token es requerido",
+      message: acceptedLanguage === "es" ? "Token es requerido" : "Token is required",
     });
   }
 
@@ -595,7 +606,7 @@ const deleteUser = async (req, res = response) => {
       connection.release();
       return res.status(404).json({
         ok: false,
-        message: "Usuario no encontrado o token inválido",
+        message: acceptedLanguage === "es" ? "Usuario no encontrado o token inválido" : "User not found or invalid token",
       });
     }
 
@@ -606,14 +617,14 @@ const deleteUser = async (req, res = response) => {
 
     res.status(200).json({
       ok: true,
-      message: "Cuenta eliminada correctamente",
+      message: acceptedLanguage === "es" ? "Cuenta eliminada correctamente" : "Account deleted successfully",
     });
 
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      message: "No es posible eliminar la cuenta, contacte con el administrador",
+      message: acceptedLanguage === "es" ? "No es posible eliminar la cuenta, contacte con el administrador" : "Unable to delete the account, please contact the administrator",
     });
   }
 
@@ -632,6 +643,7 @@ const revalidateToken = async (req, res = response) => {
 };
 
 const logoutUser = async (req, res = response) => {
+
   res.clearCookie("token", {
     httpOnly: true,
     secure: true,
@@ -640,7 +652,7 @@ const logoutUser = async (req, res = response) => {
   });
   res.status(200).json({
     ok: true,
-    message: "Sesión cerrada correctamente"
+    message: "Sesión cerrada correctamente",
   })
 }
 

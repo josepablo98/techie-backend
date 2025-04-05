@@ -3,19 +3,20 @@ const jwt = require("jsonwebtoken");
 
 const createChat = async (req, res) => {
     const { message } = req.body;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
     const { token } = req.cookies;
 
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba message",
+            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba únicamente el mensaje" : "Bad request: Only message expected",
         });
     }
 
     if (!token || !message) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token o mensaje",
+            message: acceptedLanguage === "es" ? "Falta token o mensaje" : "Missing token or message",
         });
     }
 
@@ -32,7 +33,7 @@ const createChat = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
         const userId = rows[0].id;
@@ -45,7 +46,7 @@ const createChat = async (req, res) => {
             connection.release();
             return res.status(403).json({
                 ok: false,
-                message: "No se puede crear un chat si la opción de guardado automático está desactivada"
+                message: acceptedLanguage === "es" ? "No se puede crear un chat si la opción de guardado automático está desactivada" : "Cannot create a chat if the auto-save option is disabled",
             })
         }
 
@@ -60,13 +61,13 @@ const createChat = async (req, res) => {
         connection.release();
         res.status(201).json({
             ok: true,
-            message: "Chat creado correctamente",
+            message: acceptedLanguage === "es" ? "Chat creado correctamente" : "Chat created successfully",
             chatId
         });
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -76,25 +77,26 @@ const updateChat = async (req, res) => {
     const { id } = req.params;
     const { message } = req.body;
     const { token } = req.cookies;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba message",
+            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba únicamente el mensaje" : "Bad request: Only message expected",
         });
     }
 
     if (!message || !token) {
         return res.status(400).json({
             ok: false,
-            message: "Falta mensaje o token",
+            message: acceptedLanguage === "es" ? "Falta token o mensaje" : "Missing token or message",
         });
     }
 
     if (!id) {
         return res.status(400).json({
             ok: false,
-            message: "Falta id",
+            message: acceptedLanguage === "es" ? "Falta id" : "Missing id",
         });
     }
 
@@ -111,7 +113,7 @@ const updateChat = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
 
@@ -124,7 +126,7 @@ const updateChat = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Chat no encontrado o no pertenece al usuario",
+                message: acceptedLanguage === "es" ? "Chat no encontrado o no pertenece al usuario" : "Chat not found or does not belong to the user",
             });
         }
 
@@ -143,12 +145,12 @@ const updateChat = async (req, res) => {
 
         res.status(200).json({
             ok: true,
-            message: "Mensaje añadido correctamente",
+            message: acceptedLanguage === "es" ? "Mensaje añadido correctamente" : "Message added successfully",
         });
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -156,11 +158,12 @@ const updateChat = async (req, res) => {
 
 const getChatsByUserId = async (req, res) => {
     const { token } = req.cookies;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (!token) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token",
+            message: acceptedLanguage === "es" ? "Falta token" : "Missing token",
         });
     }
 
@@ -177,7 +180,7 @@ const getChatsByUserId = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
 
@@ -190,7 +193,7 @@ const getChatsByUserId = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "No se han encontrado chats",
+                message: acceptedLanguage === "es" ? "No se han encontrado chats" : "No chats found",
             });
         }
 
@@ -203,7 +206,7 @@ const getChatsByUserId = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -212,11 +215,12 @@ const getChatsByUserId = async (req, res) => {
 const getChatsByUserIdAndChatId = async (req, res) => {
     const { token } = req.cookies;
     const { id } = req.params;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (!token || !id) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token o id",
+            message: acceptedLanguage === "es" ? "Falta token o id" : "Missing token or id",
         });
     }
 
@@ -233,7 +237,7 @@ const getChatsByUserIdAndChatId = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
 
@@ -246,7 +250,7 @@ const getChatsByUserIdAndChatId = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Chat no encontrado o no pertenece al usuario",
+                message: acceptedLanguage === "es" ? "Chat no encontrado o no pertenece al usuario" : "Chat not found or does not belong to the user",
             });
         }
 
@@ -259,7 +263,7 @@ const getChatsByUserIdAndChatId = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -269,18 +273,19 @@ const updateTitle = async (req, res) => {
     const { title } = req.body;
     const { token } = req.cookies;
     const { id } = req.params;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: "Petición incorrecta. Se esperaba title",
+            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba únicamente el título" : "Bad request: Only title expected",
         });
     }
 
     if (!token || !id || !title) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token, id o title",
+            message: acceptedLanguage === "es" ? "Falta token, id o título" : "Missing token, id or title",
         });
     }
 
@@ -297,7 +302,7 @@ const updateTitle = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
 
@@ -310,7 +315,7 @@ const updateTitle = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Chat no encontrado o no pertenece al usuario",
+                message: acceptedLanguage === "es" ? "Chat no encontrado o no pertenece al usuario" : "Chat not found or does not belong to the user",
             });
         }
 
@@ -323,12 +328,12 @@ const updateTitle = async (req, res) => {
 
         res.status(200).json({
             ok: true,
-            message: "Título actualizado correctamente",
+            message: acceptedLanguage === "es" ? "Título actualizado correctamente" : "Title updated successfully",
         });
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -337,11 +342,12 @@ const updateTitle = async (req, res) => {
 const deleteChat = async (req, res) => {
     const { token } = req.cookies;
     const { id } = req.params;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (!token || !id) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token o id",
+            message: acceptedLanguage === "es" ? "Falta token o id" : "Missing token or id",
         });
     }
 
@@ -358,7 +364,7 @@ const deleteChat = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
 
@@ -371,7 +377,7 @@ const deleteChat = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Chat no encontrado o no pertenece al usuario",
+                message: acceptedLanguage === "es" ? "Chat no encontrado o no pertenece al usuario" : "Chat not found or does not belong to the user",
             });
         }
 
@@ -381,12 +387,12 @@ const deleteChat = async (req, res) => {
 
         res.status(200).json({
             ok: true,
-            message: "Chat eliminado correctamente",
+            message: acceptedLanguage === "es" ? "Chat eliminado correctamente" : "Chat deleted successfully",
         });
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }
@@ -394,11 +400,12 @@ const deleteChat = async (req, res) => {
 
 const deleteAllChats = async (req, res) => {
     const { token } = req.cookies;
+    const acceptedLanguage = req.headers["accept-language"] || "es";
 
     if (!token) {
         return res.status(400).json({
             ok: false,
-            message: "Falta token",
+            message: acceptedLanguage === "es" ? "Falta token" : "Missing token",
         });
     }
 
@@ -413,7 +420,7 @@ const deleteAllChats = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "Usuario no encontrado",
+                message: acceptedLanguage === "es" ? "Usuario no encontrado" : "User not found",
             });
         }
         const chats = await connection.query(
@@ -425,20 +432,20 @@ const deleteAllChats = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: "No se han encontrado chats",
+                message: acceptedLanguage === "es" ? "No se han encontrado chats" : "No chats found",
             });
         }
         await connection.query("DELETE FROM chat WHERE userId = ?", [user[0].id]);
         connection.release();
         res.status(200).json({
             ok: true,
-            message: "Chats eliminados correctamente",
+            message: acceptedLanguage === "es" ? "Chats eliminados correctamente" : "Chats deleted successfully",
         });
 
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: "Error en el servidor",
+            message: acceptedLanguage === "es" ? "Error en el servidor" : "Server error",
             error,
         });
     }

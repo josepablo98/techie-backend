@@ -4,19 +4,20 @@ const jsonwebtoken = require('jsonwebtoken');
 
 const updateSettings = async (req, res = response) => {
     const { theme, language, detailLevel, autoSaveChats } = req.body;
+    const acceptedLanguage = req.headers['accept-language'] || 'es';
     const { token } = req.cookies;
 
     if (!token) {
         return res.status(400).json({
             ok: false,
-            message: 'Token es requerido'
+            message: acceptedLanguage === 'es' ? 'Token es requerido' : 'Token is required',
         });
     }
 
     if (Object.keys(req.body).length < 1 || Object.keys(req.body).length > 4) {
         return res.status(400).json({
             ok: false,
-            message: 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats'
+            message: acceptedLanguage === 'es' ? 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats' : 'At least one field to modify is required and no more than four. These are the fields to modify: theme, language, detailLevel, autoSaveChats',
         });
     }
 
@@ -31,7 +32,7 @@ const updateSettings = async (req, res = response) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: 'Usuario no encontrado'
+                message: acceptedLanguage === 'es' ? 'Usuario no encontrado' : 'User not found',
             });
         }
         if (theme) {
@@ -51,25 +52,26 @@ const updateSettings = async (req, res = response) => {
 
         res.status(201).json({
             ok: true,
-            message: 'Configuración actualizada correctamente'
+            message: acceptedLanguage === 'es' ? 'Configuración actualizada correctamente' : 'Settings updated successfully',
         })
 
 
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: 'Error en el servidor'
+            message: acceptedLanguage === 'es' ? 'Error en el servidor' : 'Server error',
         });
     }
 }
 
 const getSettings = async (req, res = response) => {
     const { token } = req.cookies;
+    const acceptedLanguage = req.headers['accept-language'] || 'es';
 
     if (!token) {
         return res.status(400).json({
             ok: false,
-            message: 'Token es requerido'
+            message: acceptedLanguage === 'es' ? 'Token es requerido' : 'Token is required',
         })
     }
 
@@ -84,7 +86,7 @@ const getSettings = async (req, res = response) => {
             connection.release();
             return res.status(404).json({
                 ok: false,
-                message: 'Usuario no encontrado'
+                message: acceptedLanguage === 'es' ? 'Usuario no encontrado' : 'User not found',
             });
         }
 
@@ -100,7 +102,7 @@ const getSettings = async (req, res = response) => {
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            message: 'Error en el servidor'
+            message: acceptedLanguage === 'es' ? 'Error en el servidor' : 'Server error',
         });
     }
 }
