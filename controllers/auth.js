@@ -333,8 +333,6 @@ const resetPassword = async (req, res = response) => {
     const connection = await pool.getConnection();
     const [user] = await connection.query("SELECT * FROM user WHERE email = ?", [email]);
 
-    console.log(user);
-
     if (!user || user.passwordResetToken !== token || new Date() > new Date(user.passwordResetTokenExpires)) {
       connection.release();
       return res.status(400).json({
