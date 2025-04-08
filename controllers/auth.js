@@ -94,7 +94,7 @@ const createUser = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: acceptedLanguage === "es" ? 'Verificación de cuenta' : 'Account Verification',
-        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}` : `Please verify your account by clicking the following link: https://localhost:3000/verify-email?token=${token}`,
+        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: ${process.env.FRONTEND_URL}/verify-email?token=${token}` : `Please verify your account by clicking the following link: ${process.env.FRONTEND_URL}/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -274,7 +274,7 @@ const requestPasswordReset = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: acceptedLanguage === "es" ? 'Restablecimiento de contraseña' : 'Password Reset',
-        text: acceptedLanguage === "es" ? `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: https://localhost:3000/reset-password?token=${token}` : `Please reset your password by clicking the following link: https://localhost:3000/reset-password?token=${token}`,
+        text: acceptedLanguage === "es" ? `Por favor, restablece tu contraseña haciendo clic en el siguiente enlace: ${process.env.FRONTEND_URL}/reset-password?token=${token}` : `Please reset your password by clicking the following link: ${process.env.FRONTEND_URL}/reset-password?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -484,7 +484,7 @@ const requestVerifiedEmail = async (req, res = response) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: acceptedLanguage === "es" ? 'Verificación de cuenta' : 'Account Verification',
-        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: https://localhost:3000/verify-email?token=${token}` : `Please verify your account by clicking the following link: https://localhost:3000/verify-email?token=${token}`,
+        text: acceptedLanguage === "es" ? `Por favor, verifica tu cuenta haciendo clic en el siguiente enlace: ${process.env.FRONTEND_URL}/verify-email?token=${token}` : `Please verify your account by clicking the following link: ${process.env.FRONTEND_URL}/verify-email?token=${token}`,
       };
 
       await transporter.sendMail(mailOptions);
