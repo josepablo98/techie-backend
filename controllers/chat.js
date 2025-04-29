@@ -54,8 +54,8 @@ const createChat = async (req, res) => {
         const messages = JSON.stringify([{ index: 0, message: message }]);
 
         const result = await connection.query(
-            "INSERT INTO chat (userId, date, messages) VALUES (?, ?, ?)",
-            [userId, date, messages]
+            "INSERT INTO chat (userId, date, messages, lastDate) VALUES (?, ?, ?, ?)",
+            [userId, date, messages, date]
         );
         const chatId = Number(result.insertId);
         connection.release();
@@ -117,6 +117,8 @@ const updateChat = async (req, res) => {
             });
         }
 
+        
+
         const chat = await connection.query(
             "SELECT * FROM chat WHERE id = ? AND userId = ?",
             [id, user[0].id]
@@ -136,8 +138,11 @@ const updateChat = async (req, res) => {
         const newIndex = chat[0].messages.length;
         messages.push({ index: newIndex, message: message });
 
-        await connection.query("UPDATE chat SET messages = ? WHERE id = ?", [
+        const lastDate = new Date();
+
+        await connection.query("UPDATE chat SET messages = ?, lastDate = ? WHERE id = ?", [
             JSON.stringify(messages),
+            lastDate,
             id,
         ]);
 
@@ -185,7 +190,7 @@ const getChatsByUserId = async (req, res) => {
         }
 
         const chats = await connection.query(
-            "SELECT id, title FROM chat WHERE userId = ?",
+            "SELECT * FROM chat WHERE userId = ?",
             [user[0].id]
         );
 
