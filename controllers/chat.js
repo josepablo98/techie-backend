@@ -9,7 +9,7 @@ const createChat = async (req, res) => {
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba únicamente el mensaje" : "Bad request: Only message expected",
+            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba el mensaje" : "Bad request: Expected message",
         });
     }
 
@@ -51,7 +51,7 @@ const createChat = async (req, res) => {
         }
 
         const date = new Date();
-        const messages = JSON.stringify([{ index: 0, message: message }]);
+        const messages = JSON.stringify([{ message: `${message}` }]);
 
         const result = await connection.query(
             "INSERT INTO chat (userId, date, messages, lastDate) VALUES (?, ?, ?, ?)",
@@ -82,7 +82,7 @@ const updateChat = async (req, res) => {
     if (Object.keys(req.body).length !== 1) {
         return res.status(400).json({
             ok: false,
-            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba únicamente el mensaje" : "Bad request: Only message expected",
+            message: acceptedLanguage === "es" ? "Petición incorrecta: Se esperaba el mensaje" : "Bad request: Expected message",
         });
     }
 
@@ -135,8 +135,7 @@ const updateChat = async (req, res) => {
         const messages = Array.isArray(chat[0].messages)
             ? chat[0].messages
             : JSON.parse(chat[0].messages);
-        const newIndex = chat[0].messages.length;
-        messages.push({ index: newIndex, message: message });
+        messages.push({ message: `${message}` });
 
         const lastDate = new Date();
 
