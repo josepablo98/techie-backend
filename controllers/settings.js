@@ -3,7 +3,7 @@ const pool = require('../db');
 const jsonwebtoken = require('jsonwebtoken');
 
 const updateSettings = async (req, res = response) => {
-    const { theme, language, detailLevel, autoSaveChats } = req.body;
+    const { theme, language, detailLevel, autoSaveChats, globalContext } = req.body;
     const acceptedLanguage = req.headers['accept-language'] || 'es';
     const { token } = req.cookies;
 
@@ -14,10 +14,10 @@ const updateSettings = async (req, res = response) => {
         });
     }
 
-    if (Object.keys(req.body).length < 1 || Object.keys(req.body).length > 4) {
+    if (Object.keys(req.body).length < 1 || Object.keys(req.body).length > 5) {
         return res.status(400).json({
             ok: false,
-            message: acceptedLanguage === 'es' ? 'Se requiere al menos un campo a modificar y no más de cuatro. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats' : 'At least one field to modify is required and no more than four. These are the fields to modify: theme, language, detailLevel, autoSaveChats',
+            message: acceptedLanguage === 'es' ? 'Se requiere al menos un campo a modificar y no más de cinco. Estos son los campos a modificar: theme, language, detailLevel, autoSaveChats, globalContext' : 'At least one field to modify is required and no more than five. These are the fields to modify: theme, language, detailLevel, autoSaveChats, globalContext',
         });
     }
 
@@ -46,6 +46,17 @@ const updateSettings = async (req, res = response) => {
         }
         if (autoSaveChats !== undefined) {
             await connection.query("UPDATE settings SET autoSaveChats = ? WHERE userId = ?", [autoSaveChats, user[0].id]);
+        }
+
+        if (globalContext) {
+            if (globalContext.length > 500) {
+                connection.release();
+                return res.status(400).json({
+                    ok: false,
+                    message: acceptedLanguage === 'es' ? 'El contexto global no puede tener más de 500 caracteres' : 'Global context cannot be more than 500 characters',
+                });
+            }
+            await connection.query("UPDATE settings SET globalContext = ? WHERE userId = ?", [globalContext, user[0].id]);
         }
 
         connection.release();
