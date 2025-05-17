@@ -57,6 +57,8 @@ const updateSettings = async (req, res = response) => {
                 });
             }
             await connection.query("UPDATE settings SET globalContext = ? WHERE userId = ?", [globalContext, user[0].id]);
+        } else {
+            await connection.query("UPDATE settings SET globalContext = NULL WHERE userId= ?", [user[0].id]);
         }
 
         connection.release();
